@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<head>
+    <title>HackerTwitter</title>
+	<link rel="shortcut icon" href="/static/favicon.ico"/>
+</head>
+
+<style type="text/css">
+	a {text-decoration: none;}
+	a:hover {text-decoration: underline;}
+	table {
+		counter-reset: rowNumber;
+	}
+	.row_counter::before {
+		display: table-cell;
+		counter-increment: rowNumber;
+		content: counter(rowNumber) ".";
+		padding-right: 0.3em;
+		text-align: right;
+	}
+</style>
+<script>
+		var params = new URLSearchParams(document.location.search);
+		var count = 30;
+		if (params.has("count")) {
+		count = parseInt(params.get("count"), 10);
+		}
+		count += 30;
+		var count_new = count.toString();
+</script>
+<body style="font-family:Verdana, Geneva, sans-serif; font-size: 10pt; color:#000000;">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flash">
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+{% if current_user.is_authenticated %}
+  <table border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef" align="center">
+		<tr bgcolor="#00ACEE">
+				<td width="75%" height="25"><b><a href="https://twitter.john-woodman.com/timeline" style="color:#000000; vertical-align:middle;"><img src="/static/favicon.ico" width=20 style="padding-left:2px; padding-right:5px; vertical-align:middle;"/>HackerTwitter</a></b></td>
+			<td>You are logged in as {{ current_user.name }}</td>
+			<td><a href="{{ url_for("logout") }}">Log out</a></td>
+		</tr>
+	{% for m in messages %}
+		<td>{{ loop.index0 + 1 }}.
+		{% if 'retweeted_status' in m %}
+			Retweet: {{ m['full_text'] }}
+		{% elif 'reply_orig_url' in m%}
+			<a href="{{ m['reply_orig_url'] }}" target="_blank" style="color:#000000;">{{ m['full_text'] }}</a>
+		{% elif 'url' in m['entities']['urls'][0] %}
+			<a href="{{ m['entities']['urls'][0]['url'] }}" target="_blank" style="color:#000000;">{{ m['full_text'] }}</a>
+		{% else %}
+			{{ m['full_text'] }}
+		{% endif %}
+			<br/>
+			<p style="font-size: 7.5pt; color:#828282; margin-top: 2px">{{ m['time_ago'] }} by {{ m['user']['name'] }}</p>
+			</td>
+		</tr>
+	{% endfor %}
+		<tr><td>
+		  <form method="get">
+			<script>
+					document.write('<button type="submit" value="'+count_new+'" name=count>Next Posts</button>')
+			</script>
+		  </form>
+		</td></tr>
+  </table>
+{% else %}
+  You are not logged in.
+  <a href="{{ url_for("twitter.login") }}">Log in</a>
+{% endif %}
+</body>
