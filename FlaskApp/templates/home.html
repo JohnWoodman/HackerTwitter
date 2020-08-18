@@ -45,9 +45,13 @@
 			<td><a href="{{ url_for("logout") }}">Log out</a></td>
 		</tr>
 	{% for m in messages %}
-		<td>{{ loop.index0 + 1 }}.
+	<td>{{ loop.index0 + 1 }}.
 		{% if 'retweeted_status' in m %}
-			Retweet: {{ m['full_text'] }}
+			{% if 'url' in m['retweeted_status']['entities']['urls'][0] %}
+				<a href="{{ m['retweeted_status']['entities']['urls'][0]['url'] }}" target="_blank" style="color:#000000;">RT: {{ m['retweeted_status']['full_text'] }}</a>
+			{% else %}
+				RT: {{ m['retweeted_status']['full_text'] }}
+			{%endif%}
 		{% elif 'reply_orig_url' in m%}
 			<a href="{{ m['reply_orig_url'] }}" target="_blank" style="color:#000000;">{{ m['full_text'] }}</a>
 		{% elif 'url' in m['entities']['urls'][0] %}
@@ -56,7 +60,11 @@
 			{{ m['full_text'] }}
 		{% endif %}
 			<br/>
+		{% if 'retweeted_status' in m %}
+		<p style="font-size: 7.5pt; color:#828282; margin-top: 2px">{{ m['time_ago'] }} by {{ m['retweeted_status']['user']['name'] }} retweeted by {{ m['user']['name'] }}</p>
+		{% else %}
 			<p style="font-size: 7.5pt; color:#828282; margin-top: 2px">{{ m['time_ago'] }} by {{ m['user']['name'] }}</p>
+		{% endif %}
 			</td>
 		</tr>
 	{% endfor %}

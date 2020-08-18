@@ -42,16 +42,20 @@ def timeline():
     for tweet in timeline:
         retweet = False
         temp_tweet = tweet
-        while temp_tweet["in_reply_to_status_id"] is not None:
-            retweet = True
-            temp_tweet = blueprint.session.get('statuses/show.json', params={'id': temp_tweet['in_reply_to_status_id']}).json()
-        if retweet and temp_tweet['entities']['urls']: 
-            orig_url = temp_tweet['entities']['urls'][0]['url']
-            tweet['reply_orig_url'] = orig_url
+        try:
+            while temp_tweet["in_reply_to_status_id"] is not None:
+                retweet = True
+                temp_tweet = blueprint.session.get('statuses/show.json', params={'id': temp_tweet['in_reply_to_status_id']}).json()
+            if retweet and temp_tweet['entities']['urls']: 
+                orig_url = temp_tweet['entities']['urls'][0]['url']
+                tweet['reply_orig_url'] = orig_url
+        except Exception as e:
+            print('========>ERROR:'+ str(e) +'<=========')
 
         date_time_obj = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S %z %Y')
         now = datetime.datetime.now(pytz.utc)
         tweet['time_ago'] = timeago.format(date_time_obj, now)
+
 
     return render_template("home.html", messages=timeline)
 
